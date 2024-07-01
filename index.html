@@ -95,19 +95,8 @@
         });
 
         roomListDiv.appendChild(roomList);
-
-        // Show the room list when the AR session starts
-        renderer.xr.addEventListener('sessionstart', () => {
-            roomListDiv.style.display = 'block';
-        });
-
-        // Hide the room list when the AR session ends
-        renderer.xr.addEventListener('sessionend', () => {
-            roomListDiv.style.display = 'none';
-        });
-
     </script>
-    <div id="room-list" style="display: none;">
+    <div id="room-list">
         <h2>Room List</h2>
     </div>
 </body>
