@@ -45,19 +45,18 @@
         cube3.position.set(-6, 0, 3);
         scene.add(cube3);
 
-        // Define points for the path
         const points = [];
         points.push(cube1.position);
         points.push(cube2.position);
         points.push(cube3.position);
 
-        // Create a curve path using THREE.CatmullRomCurve3
         const curve = new THREE.CatmullRomCurve3(points);
-        const curvePoints = curve.getPoints(50); // Get 50 points along the curve
+        const curvePoints = curve.getPoints(50);
 
-        // Create a geometry and a line material for the path
         const pathGeometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
-        const pathMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+        
+        // Update path material to dark blue
+        const pathMaterial = new THREE.LineBasicMaterial({ color: 0x00008b }); // Dark blue color
         const path = new THREE.Line(pathGeometry, pathMaterial);
         scene.add(path);
 
