@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR with HTML Objects</title>
+    <title>Three.js AR Scene</title>
     <style>
         body { margin: 0; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
@@ -14,7 +15,10 @@
         import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
  
         const scene = new THREE.Scene();
+ 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 0;
+ 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
@@ -22,63 +26,25 @@
  
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
-
-        const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-        const material1 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const material2 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        
-        const cube1 = new THREE.Mesh(geometry, material1);
-        cube1.position.set(0, 0, -0.5);
+ 
+        const geometry1 = new THREE.BoxGeometry();
+        const material1 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const cube1 = new THREE.Mesh(geometry1, material1);
+        cube1.position.set(0, 0, 0);
         scene.add(cube1);
-
-        const cube2 = new THREE.Mesh(geometry, material2);
-        cube2.position.set(0, 0, -2.5); // 2 meters away in the z-direction
+ 
+        const geometry2 = new THREE.BoxGeometry();
+        const material2 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const cube2 = new THREE.Mesh(geometry2, material2);
+        cube2.position.set(-6, 0, 0);
         scene.add(cube2);
 
-        let hiText;
-
-        function showHiMessage(position) {
-            if (hiText) {
-                scene.remove(hiText);
-            }
-
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = 256;
-            canvas.height = 256;
-            context.fillStyle = 'white';
-            context.font = 'Bold 60px Arial';
-            context.fillText('HI', 100, 150);
-
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture });
-            hiText = new THREE.Sprite(material);
-            hiText.scale.set(0.1, 0.1, 1);
-            hiText.position.copy(position);
-            hiText.position.y += 0.1;
-            scene.add(hiText);
-        }
-
-        function onSelect(event) {
-            const controller = event.target;
-            const raycaster = new THREE.Raycaster();
-            const tempMatrix = new THREE.Matrix4();
-            tempMatrix.identity().extractRotation(controller.matrixWorld);
-            raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-            raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-
-            const intersects = raycaster.intersectObjects([cube1, cube2]);
-            if (intersects.length > 0) {
-                showHiMessage(intersects[0].object.position);
-            }
-        }
-
-        renderer.xr.addEventListener('sessionstart', function () {
-            const controller = renderer.xr.getController(0);
-            controller.addEventListener('select', onSelect);
-            scene.add(controller);
-        });
-
+        const geometry3 = new THREE.BoxGeometry();
+        const material3 = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const cube3 = new THREE.Mesh(geometry3, material3);
+        cube3.position.set(-6, 0, 3);
+        scene.add(cube3);
+ 
         function animate() {
             renderer.setAnimationLoop(render);
         }
@@ -88,6 +54,8 @@
             cube1.rotation.y += 0.01;
             cube2.rotation.x += 0.01;
             cube2.rotation.y += 0.01;
+            cube3.rotation.x += 0.01;
+            cube3.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
  
@@ -99,5 +67,8 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
+    <div>
+        <h2>Html</h2>
+    </div>
 </body>
 </html>
