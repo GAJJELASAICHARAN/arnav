@@ -13,26 +13,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module">
         import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
- 
+
         const scene = new THREE.Scene();
- 
+
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 0;
- 
+
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
- 
+
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
- 
+
         const geometry1 = new THREE.BoxGeometry();
         const material1 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const cube1 = new THREE.Mesh(geometry1, material1);
         cube1.position.set(0, 0, 0);
         scene.add(cube1);
- 
+
         const geometry2 = new THREE.BoxGeometry();
         const material2 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         const cube2 = new THREE.Mesh(geometry2, material2);
@@ -44,11 +44,27 @@
         const cube3 = new THREE.Mesh(geometry3, material3);
         cube3.position.set(-6, 0, 3);
         scene.add(cube3);
- 
+
+        // Define points for the path
+        const points = [];
+        points.push(cube1.position);
+        points.push(cube2.position);
+        points.push(cube3.position);
+
+        // Create a curve path using THREE.CatmullRomCurve3
+        const curve = new THREE.CatmullRomCurve3(points);
+        const curvePoints = curve.getPoints(50); // Get 50 points along the curve
+
+        // Create a geometry and a line material for the path
+        const pathGeometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
+        const pathMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+        const path = new THREE.Line(pathGeometry, pathMaterial);
+        scene.add(path);
+
         function animate() {
             renderer.setAnimationLoop(render);
         }
- 
+
         function render() {
             cube1.rotation.x += 0.01;
             cube1.rotation.y += 0.01;
@@ -58,21 +74,14 @@
             cube3.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
- 
+
         animate();
- 
-        cube2.addEventListener('click', () => {
-            scene.add(cube3);
-        });
- 
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
-    <div>
-        <h2>Html</h2>
-    </div>
 </body>
 </html>
