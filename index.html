@@ -61,6 +61,10 @@
  
         animate();
  
+        cube2.addEventListener('click', () => {
+            scene.add(cube3);
+        });
+ 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
