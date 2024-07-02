@@ -23,11 +23,20 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(0, 0, -0.5);
-        scene.add(cube);
+        // Function to create a cube
+        function createCube(color, x, y, z) {
+            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const material = new THREE.MeshBasicMaterial({ color: color });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(x, y, z);
+            scene.add(cube);
+            return cube;
+        }
+
+        // Create three cubes with 2 meters distance
+        const cube1 = createCube(0xff0000, 0, 0, -0.5);
+        const cube2 = createCube(0x00ff00, 2, 0, -0.5);
+        const cube3 = createCube(0x0000ff, 4, 0, -0.5);
 
         let hiText;
 
@@ -49,17 +58,8 @@
             hiText = new THREE.Sprite(material);
             hiText.scale.set(0.1, 0.1, 1);
             hiText.position.copy(position);
-            hiText.position.y += 0.1; // Position the text above the cube
+            hiText.position.y += 0.1;
             scene.add(hiText);
-        }
-
-        function addCube(position) {
-            const newGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-            const newMaterial = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
-            const newCube = new THREE.Mesh(newGeometry, newMaterial);
-            newCube.position.copy(position);
-            newCube.position.y += 0.2; // Position the new cube above the original cube
-            scene.add(newCube);
         }
 
         function onSelect(event) {
@@ -70,11 +70,9 @@
             raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
             raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
 
-            const intersects = raycaster.intersectObject(cube);
+            const intersects = raycaster.intersectObjects([cube1, cube2, cube3]);
             if (intersects.length > 0) {
-                const intersectedObject = intersects[0].object;
-                showHiMessage(intersectedObject.position);
-                addCube(intersectedObject.position);
+                showHiMessage(intersects[0].object.position);
             }
         }
 
@@ -89,8 +87,12 @@
         }
  
         function render() {
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
+            cube1.rotation.x += 0.01;
+            cube1.rotation.y += 0.01;
+            cube2.rotation.x += 0.01;
+            cube2.rotation.y += 0.01;
+            cube3.rotation.x += 0.01;
+            cube3.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
  
