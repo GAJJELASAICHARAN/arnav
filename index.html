@@ -48,39 +48,19 @@
         cube3.scale.set(0.5, 0.5, 0.5);
         scene.add(cube3);
 
-        const createArrow = (position, rotation) => {
-            const arrowShape = new THREE.Shape();
-            arrowShape.moveTo(0, 1);
-            arrowShape.lineTo(0.5, 0.5);
-            arrowShape.lineTo(0.25, 0.5);
-            arrowShape.lineTo(0.25, -1);
-            arrowShape.lineTo(-0.25, -1);
-            arrowShape.lineTo(-0.25, 0.5);
-            arrowShape.lineTo(-0.5, 0.5);
-            arrowShape.lineTo(0, 1);
+        const points = [];
+        points.push(cube1.position);
+        points.push(cube2.position);
+        points.push(cube3.position);
 
-            const extrudeSettings = { depth: 0.1, bevelEnabled: false };
-            const arrowGeometry = new THREE.ExtrudeGeometry(arrowShape, extrudeSettings);
-            const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-            arrow.position.copy(position);
-            arrow.rotation.set(rotation.x, rotation.y, rotation.z);
-            arrow.scale.set(0.5, 0.5, 0.5);
-            return arrow;
-        };
+        const curve = new THREE.CatmullRomCurve3(points);
+        curve.curveType = 'catmullrom';
+        curve.tension = 0.5;
 
-        const points = [cube1.position, cube2.position, cube3.position];
-
-        points.forEach((point, index) => {
-            if (index < points.length - 1) {
-                const nextPoint = points[index + 1];
-                const direction = nextPoint.clone().sub(point).normalize();
-                const arrowPosition = point.clone().add(nextPoint).multiplyScalar(0.5);
-                const arrowRotation = new THREE.Vector3(Math.atan2(direction.y, direction.x), Math.atan2(direction.z, direction.x), 0);
-                const arrow = createArrow(arrowPosition, arrowRotation);
-                scene.add(arrow);
-            }
-        });
+        const tubeGeometry = new THREE.TubeGeometry(curve, 50, 0.1, 8, false);
+        const tubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00008b });
+        const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
+        scene.add(tubeMesh);
 
         function animate() {
             renderer.setAnimationLoop(render);
