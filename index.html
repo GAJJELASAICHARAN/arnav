@@ -27,47 +27,72 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        const arrowShape = new THREE.Shape();
-        arrowShape.moveTo(0, 1);
-        arrowShape.lineTo(0.5, 0.5);
-        arrowShape.lineTo(0.25, 0.5);
-        arrowShape.lineTo(0.25, -1);
-        arrowShape.lineTo(-0.25, -1);
-        arrowShape.lineTo(-0.25, 0.5);
-        arrowShape.lineTo(-0.5, 0.5);
-        arrowShape.lineTo(0, 1);
+        const geometry1 = new THREE.BoxGeometry();
+        const material1 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const cube1 = new THREE.Mesh(geometry1, material1);
+        cube1.position.set(0, -1.25, 0);
+        cube1.scale.set(0.5, 0.5, 0.5);
+        scene.add(cube1);
 
-        const extrudeSettings = { depth: 0.1, bevelEnabled: false };
-        const arrowGeometry = new THREE.ExtrudeGeometry(arrowShape, extrudeSettings);
-        const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const geometry2 = new THREE.BoxGeometry();
+        const material2 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const cube2 = new THREE.Mesh(geometry2, material2);
+        cube2.position.set(-6, -1.25, 0);
+        cube2.scale.set(0.5, 0.5, 0.5);
+        scene.add(cube2);
 
-        const createArrow = (x, y, z) => {
+        const geometry3 = new THREE.BoxGeometry();
+        const material3 = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const cube3 = new THREE.Mesh(geometry3, material3);
+        cube3.position.set(-6, -1.25, 3);
+        cube3.scale.set(0.5, 0.5, 0.5);
+        scene.add(cube3);
+
+        const createArrow = (position, rotation) => {
+            const arrowShape = new THREE.Shape();
+            arrowShape.moveTo(0, 1);
+            arrowShape.lineTo(0.5, 0.5);
+            arrowShape.lineTo(0.25, 0.5);
+            arrowShape.lineTo(0.25, -1);
+            arrowShape.lineTo(-0.25, -1);
+            arrowShape.lineTo(-0.25, 0.5);
+            arrowShape.lineTo(-0.5, 0.5);
+            arrowShape.lineTo(0, 1);
+
+            const extrudeSettings = { depth: 0.1, bevelEnabled: false };
+            const arrowGeometry = new THREE.ExtrudeGeometry(arrowShape, extrudeSettings);
+            const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-            arrow.position.set(x, y, z);
-            arrow.rotation.x = -Math.PI / 2;
+            arrow.position.copy(position);
+            arrow.rotation.set(rotation.x, rotation.y, rotation.z);
             arrow.scale.set(0.5, 0.5, 0.5);
             return arrow;
         };
 
-        const arrow1 = createArrow(0, -1.25, 0);
-        const arrow2 = createArrow(-3, -1.25, 0);
-        const arrow3 = createArrow(-6, -1.25, 0);
-        const arrow4 = createArrow(-6, -1.25, 3);
+        const points = [cube1.position, cube2.position, cube3.position];
 
-        scene.add(arrow1);
-        scene.add(arrow2);
-        scene.add(arrow3);
-        scene.add(arrow4);
+        points.forEach((point, index) => {
+            if (index < points.length - 1) {
+                const nextPoint = points[index + 1];
+                const direction = nextPoint.clone().sub(point).normalize();
+                const arrowPosition = point.clone().add(nextPoint).multiplyScalar(0.5);
+                const arrowRotation = new THREE.Vector3(Math.atan2(direction.y, direction.x), Math.atan2(direction.z, direction.x), 0);
+                const arrow = createArrow(arrowPosition, arrowRotation);
+                scene.add(arrow);
+            }
+        });
 
         function animate() {
             renderer.setAnimationLoop(render);
         }
 
         function render() {
-            arrow1.rotation.y += 0.01;
-            arrow2.rotation.y += 0.01;
-            arrow3.rotation.y += 0.01;
-            arrow4.rotation.y += 0.01;
+            cube1.rotation.x += 0.01;
+            cube1.rotation.y += 0.01;
+            cube2.rotation.x += 0.01;
+            cube2.rotation.y += 0.01;
+            cube3.rotation.x += 0.01;
+            cube3.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
 
