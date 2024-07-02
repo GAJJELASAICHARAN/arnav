@@ -23,18 +23,11 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        const cubes = [];
-        const cubeColors = [0xff0000, 0x00ff00, 0x0000ff];
-        const cubePositions = [-0.2, 0, 0.2];
-
-        for (let i = 0; i < 3; i++) {
-            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-            const material = new THREE.MeshBasicMaterial({ color: cubeColors[i] });
-            const cube = new THREE.Mesh(geometry, material);
-            cube.position.set(cubePositions[i], 0, -0.5);
-            scene.add(cube);
-            cubes.push(cube);
-        }
+        const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(0, 0, -0.5);
+        scene.add(cube);
 
         let hiText;
 
@@ -60,6 +53,15 @@
             scene.add(hiText);
         }
 
+        function addCube(position) {
+            const newGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const newMaterial = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
+            const newCube = new THREE.Mesh(newGeometry, newMaterial);
+            newCube.position.copy(position);
+            newCube.position.y += 0.2; // Position the new cube above the original cube
+            scene.add(newCube);
+        }
+
         function onSelect(event) {
             const controller = event.target;
             const raycaster = new THREE.Raycaster();
@@ -68,18 +70,11 @@
             raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
             raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
 
-            const intersects = raycaster.intersectObjects(cubes);
+            const intersects = raycaster.intersectObject(cube);
             if (intersects.length > 0) {
                 const intersectedObject = intersects[0].object;
-                const intersectedColor = intersectedObject.material.color;
-
-                // Show the "HI" message above the intersected cube
                 showHiMessage(intersectedObject.position);
-
-                // Change the color of all cubes to the color of the intersected cube
-                cubes.forEach(cube => {
-                    cube.material.color.set(intersectedColor);
-                });
+                addCube(intersectedObject.position);
             }
         }
 
@@ -94,10 +89,8 @@
         }
  
         function render() {
-            cubes.forEach(cube => {
-                cube.rotation.x += 0.01;
-                cube.rotation.y += 0.01;
-            });
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
  
