@@ -48,11 +48,19 @@
         cube3.scale.set(0.5, 0.5, 0.5);
         scene.add(cube3);
 
-        // Creating an arrow to visualize the path
-        const dir = new THREE.Vector3();
-        dir.subVectors(cube3.position, cube2.position).normalize();
-        const arrowHelper = new THREE.ArrowHelper(dir, cube2.position, cube3.position.distanceTo(cube2.position), 0x00008b);
-        scene.add(arrowHelper);
+        const points = [];
+        points.push(cube1.position);
+        points.push(cube2.position);
+        points.push(cube3.position);
+
+        const curve = new THREE.CatmullRomCurve3(points);
+        curve.curveType = 'catmullrom';
+        curve.tension = 0.5;
+
+        const tubeGeometry = new THREE.TubeGeometry(curve, 50, 0.1, 8, false);
+        const tubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00008b });
+        const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
+        scene.add(tubeMesh);
 
         function animate() {
             renderer.setAnimationLoop(render);
