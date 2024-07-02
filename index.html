@@ -51,14 +51,13 @@
         points.push(cube3.position);
 
         const curve = new THREE.CatmullRomCurve3(points);
-        const curvePoints = curve.getPoints(50);
+        curve.curveType = 'catmullrom';
+        curve.tension = 0.5;
 
-        const pathGeometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
-        
-        // Update path material to dark blue
-        const pathMaterial = new THREE.LineBasicMaterial({ color: 0x00008b }); // Dark blue color
-        const path = new THREE.Line(pathGeometry, pathMaterial);
-        scene.add(path);
+        const tubeGeometry = new THREE.TubeGeometry(curve, 50, 0.1, 8, false);
+        const tubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00008b }); // Dark blue color
+        const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
+        scene.add(tubeMesh);
 
         function animate() {
             renderer.setAnimationLoop(render);
