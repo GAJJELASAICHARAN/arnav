@@ -71,7 +71,15 @@
             const intersects = raycaster.intersectObjects(cubes);
             if (intersects.length > 0) {
                 const intersectedObject = intersects[0].object;
+                const intersectedColor = intersectedObject.material.color;
+
+                // Show the "HI" message above the intersected cube
                 showHiMessage(intersectedObject.position);
+
+                // Change the color of all cubes to the color of the intersected cube
+                cubes.forEach(cube => {
+                    cube.material.color.set(intersectedColor);
+                });
             }
         }
 
