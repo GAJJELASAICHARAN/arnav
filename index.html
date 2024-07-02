@@ -73,7 +73,7 @@
 
         // Create cubes for navigation
         const cubes = [];
-        const cubeColors = [0x00ff00, 0xff0000, 0x0000ff];
+        const cubeColors = [0xff0000, 0x00ff00, 0x0000ff];
         const cubePositions = [-1.5, 0.25, 2];
 
         for (let i = 0; i < 3; i++) {
@@ -86,10 +86,41 @@
         }
 
         // Handle cube clicks
-        cubes.forEach((cube, index) => {
-            cube.addEventListener('click', () => {
-                navigateToRoom(index);
+        function onCubeClick(index) {
+            // Remove all cubes from the scene
+            cubes.forEach(cube => scene.remove(cube));
+
+            // Create message text
+            const message = index === 0 ? "Red Cube" : index === 1 ? "Green Cube" : "Blue Cube";
+            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+                const textMaterial = new THREE.MeshBasicMaterial({ color: cubeColors[index] });
+                const textGeometry = new THREE.TextGeometry(message, {
+                    font: font,
+                    size: 0.5,
+                    height: 0.1
+                });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(-1, 0, -3);
+                scene.add(textMesh);
             });
+        }
+
+        renderer.domElement.addEventListener('click', (event) => {
+            event.preventDefault();
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects(cubes);
+            
+            if (intersects.length > 0) {
+                const selectedCube = intersects[0].object;
+                const index = cubes.indexOf(selectedCube);
+                onCubeClick(index);
+            }
         });
 
         function animate() {
@@ -111,22 +142,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-        
-        function navigateToRoom(index) {
-            switch (index) {
-                case 0:
-                    window.location.href = '#roomA';
-                    break;
-                case 1:
-                    window.location.href = '#roomB';
-                    break;
-                case 2:
-                    window.location.href = '#roomC';
-                    break;
-                default:
-                    break;
-            }
-        }
     </script>
 </body>
 </html>
