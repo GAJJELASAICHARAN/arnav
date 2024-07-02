@@ -27,52 +27,47 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        const geometry1 = new THREE.BoxGeometry();
-        const material1 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const cube1 = new THREE.Mesh(geometry1, material1);
-        cube1.position.set(0, -1.25, 0);
-        cube1.scale.set(0.5, 0.5, 0.5);
-        scene.add(cube1);
+        const arrowShape = new THREE.Shape();
+        arrowShape.moveTo(0, 1);
+        arrowShape.lineTo(0.5, 0.5);
+        arrowShape.lineTo(0.25, 0.5);
+        arrowShape.lineTo(0.25, -1);
+        arrowShape.lineTo(-0.25, -1);
+        arrowShape.lineTo(-0.25, 0.5);
+        arrowShape.lineTo(-0.5, 0.5);
+        arrowShape.lineTo(0, 1);
 
-        const geometry2 = new THREE.BoxGeometry();
-        const material2 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const cube2 = new THREE.Mesh(geometry2, material2);
-        cube2.position.set(-6, -1.25, 0);
-        cube2.scale.set(0.5, 0.5, 0.5);
-        scene.add(cube2);
+        const extrudeSettings = { depth: 0.1, bevelEnabled: false };
+        const arrowGeometry = new THREE.ExtrudeGeometry(arrowShape, extrudeSettings);
+        const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
-        const geometry3 = new THREE.BoxGeometry();
-        const material3 = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-        const cube3 = new THREE.Mesh(geometry3, material3);
-        cube3.position.set(-6, -1.25, 3);
-        cube3.scale.set(0.5, 0.5, 0.5);
-        scene.add(cube3);
+        const createArrow = (x, y, z) => {
+            const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+            arrow.position.set(x, y, z);
+            arrow.rotation.x = -Math.PI / 2;
+            arrow.scale.set(0.5, 0.5, 0.5);
+            return arrow;
+        };
 
-        const points = [];
-        points.push(cube1.position);
-        points.push(cube2.position);
-        points.push(cube3.position);
+        const arrow1 = createArrow(0, -1.25, 0);
+        const arrow2 = createArrow(-3, -1.25, 0);
+        const arrow3 = createArrow(-6, -1.25, 0);
+        const arrow4 = createArrow(-6, -1.25, 3);
 
-        const curve = new THREE.CatmullRomCurve3(points);
-        curve.curveType = 'catmullrom';
-        curve.tension = 0.5;
-
-        const tubeGeometry = new THREE.TubeGeometry(curve, 50, 0.1, 8, false);
-        const tubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00008b });
-        const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
-        scene.add(tubeMesh);
+        scene.add(arrow1);
+        scene.add(arrow2);
+        scene.add(arrow3);
+        scene.add(arrow4);
 
         function animate() {
             renderer.setAnimationLoop(render);
         }
 
         function render() {
-            cube1.rotation.x += 0.01;
-            cube1.rotation.y += 0.01;
-            cube2.rotation.x += 0.01;
-            cube2.rotation.y += 0.01;
-            cube3.rotation.x += 0.01;
-            cube3.rotation.y += 0.01;
+            arrow1.rotation.y += 0.01;
+            arrow2.rotation.y += 0.01;
+            arrow3.rotation.y += 0.01;
+            arrow4.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
 
