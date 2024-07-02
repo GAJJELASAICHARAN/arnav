@@ -31,18 +31,21 @@
         const material1 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const cube1 = new THREE.Mesh(geometry1, material1);
         cube1.position.set(0, -1.25, 0);
+        cube1.scale.set(0.5, 0.5, 0.5);
         scene.add(cube1);
 
         const geometry2 = new THREE.BoxGeometry();
         const material2 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         const cube2 = new THREE.Mesh(geometry2, material2);
         cube2.position.set(-6, -1.25, 0);
+        cube2.scale.set(0.5, 0.5, 0.5);
         scene.add(cube2);
 
         const geometry3 = new THREE.BoxGeometry();
         const material3 = new THREE.MeshBasicMaterial({ color: 0x0000ff });
         const cube3 = new THREE.Mesh(geometry3, material3);
         cube3.position.set(-6, -1.25, 3);
+        cube3.scale.set(0.5, 0.5, 0.5);
         scene.add(cube3);
 
         const points = [];
