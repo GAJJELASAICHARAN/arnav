@@ -3,14 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js AR Scene</title>
+    <title>AR with HTML Overlay</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
+        .overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
+    <div class="overlay" id="overlay" style="display: none;">
+        <h2>Welcome to AR</h2>
+        <p>Tap on a cube to navigate:</p>
+        <ul id="cubeList"></ul>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/renderers/CSS2DRenderer.min.js"></script>
     <script type="module">
         import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
  
@@ -23,6 +39,12 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
+
+        const cssRenderer = new THREE.CSS2DRenderer();
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.domElement.style.position = 'absolute';
+        cssRenderer.domElement.style.top = '0px';
+        document.body.appendChild(cssRenderer.domElement);
  
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
@@ -73,6 +95,7 @@
             cube3.rotation.x += 0.01;
             cube3.rotation.y += 0.01;
             renderer.render(scene, camera);
+            cssRenderer.render(scene, camera);
         }
  
         animate();
@@ -81,23 +104,70 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            cssRenderer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        // Adding room names to the list
         const roomNames = ["Room A", "Room B", "Room C"];
-        const roomListDiv = document.getElementById('room-list');
-        const roomList = document.createElement('ul');
+        const cubeList = document.getElementById('cubeList');
 
-        roomNames.forEach(room => {
+        roomNames.forEach((room, index) => {
             const listItem = document.createElement('li');
             listItem.textContent = room;
-            roomList.appendChild(listItem);
+            listItem.addEventListener('click', () => {
+                navigateToCube(index);
+            });
+            cubeList.appendChild(listItem);
         });
 
-        roomListDiv.appendChild(roomList);
+        function navigateToCube(index) {
+            let nextPage = '';
+            switch (index) {
+                case 0:
+                    nextPage = 'sphere.html'; // URL of the next page with a sphere
+                    break;
+                case 1:
+                    nextPage = 'another_page.html'; // URL of another page
+                    break;
+                case 2:
+                    nextPage = 'third_page.html'; // URL of a third page
+                    break;
+                default:
+                    break;
+            }
+            if (nextPage !== '') {
+                window.location.href = nextPage;
+            }
+        }
+
+        renderer.domElement.addEventListener('click', onCubeClick, false);
+
+        function onCubeClick(event) {
+            event.preventDefault();
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects([cube1, cube2, cube3]);
+            
+            if (intersects.length > 0) {
+                const selectedCube = intersects[0].object;
+                if (selectedCube === cube1) {
+                    showOverlay();
+                } else if (selectedCube === cube2) {
+                    showOverlay();  
+                } else if (selectedCube === cube3) {
+                    showOverlay();
+                }
+            }
+        }
+
+        function showOverlay() {
+            const overlay = document.getElementById('overlay');
+            overlay.style.display = 'block';
+        }
     </script>
-    <div id="room-list">
-        <h2>Room List</h2>
-    </div>
 </body>
 </html>
