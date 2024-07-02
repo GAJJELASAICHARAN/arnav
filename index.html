@@ -23,20 +23,17 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        // Function to create a cube
-        function createCube(color, x, y, z) {
-            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-            const material = new THREE.MeshBasicMaterial({ color: color });
-            const cube = new THREE.Mesh(geometry, material);
-            cube.position.set(x, y, z);
-            scene.add(cube);
-            return cube;
-        }
+        const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        const material1 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const material2 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        
+        const cube1 = new THREE.Mesh(geometry, material1);
+        cube1.position.set(0, 0, -0.5);
+        scene.add(cube1);
 
-        // Create three cubes with 2 meters distance
-        const cube1 = createCube(0xff0000, 0, 0, -0.5);
-        const cube2 = createCube(0x00ff00, 2, 0, -0.5);
-        const cube3 = createCube(0x0000ff, 4, 0, -0.5);
+        const cube2 = new THREE.Mesh(geometry, material2);
+        cube2.position.set(0, 0, -2.5); // 2 meters away in the z-direction
+        scene.add(cube2);
 
         let hiText;
 
@@ -70,7 +67,7 @@
             raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
             raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
 
-            const intersects = raycaster.intersectObjects([cube1, cube2, cube3]);
+            const intersects = raycaster.intersectObjects([cube1, cube2]);
             if (intersects.length > 0) {
                 showHiMessage(intersects[0].object.position);
             }
@@ -91,8 +88,6 @@
             cube1.rotation.y += 0.01;
             cube2.rotation.x += 0.01;
             cube2.rotation.y += 0.01;
-            cube3.rotation.x += 0.01;
-            cube3.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
  
