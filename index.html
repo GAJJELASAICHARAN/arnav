@@ -9,6 +9,9 @@
         canvas { display: block; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/geometries/TextGeometry.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json"></script>
     <script type="module">
         import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js";
@@ -55,22 +58,23 @@
         const cube3 = new THREE.Mesh(geometry3, material3);
         scene.add(cube3);
 
+        const loader = new THREE.FontLoader();
+
         async function fetchCubesData() {
             const querySnapshot = await getDocs(collection(db, "navigations"));
-            const docList = document.getElementById("document-list");
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const listItem = document.createElement("li");
-                listItem.textContent = doc.id;
-                docList.appendChild(listItem);
 
                 if (data.id === 1) {
                     cube1.position.set(data.x, data.y, data.z);
+                    addLabel(data.name, data.x, data.y + 0.2, data.z);
                 } else if (data.id === 2) {
                     cube2.position.set(data.x, data.y, data.z);
+                    addLabel(data.name, data.x, data.y + 0.2, data.z);
                 } else if (data.id === 3) {
                     cube3.position.set(data.x, data.y, data.z);
+                    addLabel(data.name, data.x, data.y + 0.2, data.z);
                 }
             });
 
@@ -83,6 +87,20 @@
             const tubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00008b });
             const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
             scene.add(tubeMesh);
+        }
+
+        function addLabel(text, x, y, z) {
+            loader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+                const textGeometry = new THREE.TextGeometry(text, {
+                    font: font,
+                    size: 0.1,
+                    height: 0.01,
+                });
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(x, y, z);
+                scene.add(textMesh);
+            });
         }
 
         fetchCubesData();
