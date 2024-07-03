@@ -51,13 +51,16 @@
                 const data = doc.data();
                 const listItem = document.createElement("li");
                 listItem.textContent = doc.id;
+                listItem.addEventListener('click', () => {
+                    placeCubes(data.first, data.second);
+                });
                 docList.appendChild(listItem);
 
-                // Add text label in AR with random positions
-                const x = Math.random() * 2 - 1; // Random value between -1 and 1
-                const y = Math.random() * 2 - 1; // Random value between -1 and 1
-                const z = Math.random() * -5;    // Random value between -5 and 0
+                const x = 0;
+                const y = 0.5 * index;
+                const z = -2;
                 addLabel(doc.id, x, y, z);
+                index++;
             });
         }
 
@@ -73,6 +76,19 @@
                 textMesh.position.set(x, y, z);
                 scene.add(textMesh);
             });
+        }
+
+        function placeCubes(first, second) {
+            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+            const cube1 = new THREE.Mesh(geometry, material);
+            cube1.position.set(first.x, 0, first.z);
+            scene.add(cube1);
+
+            const cube2 = new THREE.Mesh(geometry, material);
+            cube2.position.set(second.x, 0, second.z);
+            scene.add(cube2);
         }
 
         fetchDocumentsData();
