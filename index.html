@@ -45,26 +45,21 @@
 
         async function fetchDocumentsData() {
             const querySnapshot = await getDocs(collection(db, "navigations"));
-            const docList = document.getElementById("document-list");
+            let index = 0;
+            const spacing = 0.5;
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const listItem = document.createElement("li");
-                listItem.textContent = doc.id;
-                listItem.addEventListener('click', () => {
-                    placeCubes(data.first, data.second);
-                });
-                docList.appendChild(listItem);
-
                 const x = 0;
-                const y = 0.5 * index;
+                const y = index * spacing;
                 const z = -2;
-                addLabel(doc.id, x, y, z);
+
+                addLabel(doc.id, x, y, z, data.first, data.second);
                 index++;
             });
         }
 
-        function addLabel(text, x, y, z) {
+        function addLabel(text, x, y, z, first, second) {
             loader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json', function (font) {
                 const textGeometry = new THREE.TextGeometry(text, {
                     font: font,
@@ -74,6 +69,10 @@
                 const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
                 const textMesh = new THREE.Mesh(textGeometry, textMaterial);
                 textMesh.position.set(x, y, z);
+                textMesh.userData = { first, second };
+                textMesh.callback = function() {
+                    placeCubes(first, second);
+                };
                 scene.add(textMesh);
             });
         }
@@ -108,9 +107,27 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        window.addEventListener('click', (event) => {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(scene.children);
+
+            for (let i = 0; i < intersects.length; i++) {
+                if (intersects[i].object.callback) {
+                    intersects[i].object.callback();
+                    break;
+                }
+            }
+        });
+
     </script>
 </head>
 <body>
-    <ul id="document-list"></ul>
 </body>
 </html>
