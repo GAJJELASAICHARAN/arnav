@@ -8,13 +8,25 @@
         body { margin: 0; }
         canvas { display: block; }
     </style>
-</head>
-<body>
-    <ul id="document-list"></ul>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module">
         import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
-        import { db, collection, getDocs } from './firebaseconfig.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf0n84F_P4ttOD5kBadQZ3YQbC8CtuE6s",
+            authDomain: "navigation-ade65.firebaseapp.com",
+            projectId: "navigation-ade65",
+            storageBucket: "navigation-ade65.appspot.com",
+            messagingSenderId: "360761914693",
+            appId: "1:360761914693:web:43747579dacd2909c03a2c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -97,5 +109,8 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
+</head>
+<body>
+    <ul id="document-list"></ul>
 </body>
 </html>
