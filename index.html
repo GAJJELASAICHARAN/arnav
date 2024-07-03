@@ -43,6 +43,8 @@
 
         const loader = new THREE.FontLoader();
 
+        let labelMeshes = []; // Array to store all label meshes
+
         async function fetchDocumentsData() {
             const querySnapshot = await getDocs(collection(db, "navigations"));
             let index = 0;
@@ -72,8 +74,10 @@
                 textMesh.userData = { first, second };
                 textMesh.callback = function() {
                     placeCubes(first, second);
+                    removeAllLabels();
                 };
                 scene.add(textMesh);
+                labelMeshes.push(textMesh); // Add the mesh to our array
             });
         }
 
@@ -88,6 +92,13 @@
             const cube2 = new THREE.Mesh(geometry, material);
             cube2.position.set(second.x, 0, second.z);
             scene.add(cube2);
+        }
+
+        function removeAllLabels() {
+            labelMeshes.forEach(mesh => {
+                scene.remove(mesh);
+            });
+            labelMeshes = []; // Clear the array
         }
 
         fetchDocumentsData();
