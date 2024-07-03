@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js AR Plane Detection</title>
+    <title>Three.js AR Plane Detection and Cube Placement</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -35,13 +35,6 @@
             light.position.set(0.5, 1, 0.25);
             scene.add(light);
 
-            // Plane detection
-            const planeGeometry = new THREE.PlaneGeometry(1, 1);
-            const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
-            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.rotation.x = -Math.PI / 2;
-            scene.add(plane);
-
             reticle = new THREE.Mesh(
                 new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
                 new THREE.MeshBasicMaterial()
@@ -62,6 +55,9 @@
             scene.add(controller);
 
             window.addEventListener('resize', onWindowResize, false);
+
+            // Event listener for click to place cube
+            window.addEventListener('click', onClick);
         }
 
         function onWindowResize() {
@@ -109,6 +105,23 @@
             }
 
             renderer.render(scene, camera);
+        }
+
+        function onClick(event) {
+            if (reticle.visible) {
+                const position = new THREE.Vector3();
+                position.setFromMatrixPosition(reticle.matrixWorld);
+
+                // Place a cube at the detected position
+                const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+                const material = new THREE.MeshNormalMaterial();
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.copy(position);
+                scene.add(cube);
+
+                // Optionally, remove the reticle after placing the cube
+                reticle.visible = false;
+            }
         }
     </script>
 </head>
