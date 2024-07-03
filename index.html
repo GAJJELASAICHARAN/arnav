@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js AR Scene with QR Code Scanner</title>
+    <title>AR with QR Code</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -11,123 +11,64 @@
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-    <script type="module">
-        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
-
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js"></script>
+    <script>
+        // Setup Three.js AR scene
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 0;
-
+        
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
-
+        
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
-
-        // QR Code Scanner Setup
-        let qrVideo;
-        let qrCanvas;
-        let qrContext;
-        let qrScanInterval;
-
-        function setupQRScanner() {
-            qrVideo = document.createElement('video');
-            qrCanvas = document.createElement('canvas');
-            qrContext = qrCanvas.getContext('2d');
-
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then(stream => {
-                    qrVideo.srcObject = stream;
-                    qrVideo.setAttribute('playsinline', true);
-                    qrVideo.play();
-                    checkForQRCode();
-                })
-                .catch(error => {
-                    console.error('Error accessing camera:', error);
-                });
-        }
-
-        function checkForQRCode() {
-            qrScanInterval = setInterval(() => {
-                if (qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
-                    qrCanvas.width = qrVideo.videoWidth;
-                    qrCanvas.height = qrVideo.videoHeight;
-                    qrContext.drawImage(qrVideo, 0, 0, qrCanvas.width, qrCanvas.height);
-                    const imageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    if (code) {
-                        clearInterval(qrScanInterval);
-                        handleQRCodeDetected(code.data);
-                    }
-                }
-            }, 100);
-        }
-
-        function handleQRCodeDetected(data) {
-            const qrResult = document.createElement('div');
-            qrResult.textContent = `QR Code scanned: ${data}`;
-            qrResult.style.position = 'absolute';
-            qrResult.style.top = '20px';
-            qrResult.style.left = '20px';
-            qrResult.style.backgroundColor = 'white';
-            qrResult.style.padding = '10px';
-            document.body.appendChild(qrResult);
-
-            if (data === 'HI AR') {
-                displayMessage('HI AR');
-            } else {
-                displayMessage('QR code scanned, but not recognized.');
+        
+        // Function to handle QR code scanning
+        async function handleQRCodeScan() {
+            try {
+                const qrData = await scanQRCode(); // Implement scanQRCode function
+                processQRCodeData(qrData); // Implement processQRCodeData function
+            } catch (error) {
+                console.error('Error scanning QR code:', error);
             }
         }
-
-        function displayMessage(message) {
-            const messageElement = document.createElement('div');
-            messageElement.textContent = message;
-            messageElement.style.position = 'absolute';
-            messageElement.style.top = '50%';
-            messageElement.style.left = '50%';
-            messageElement.style.transform = 'translate(-50%, -50%)';
-            messageElement.style.fontSize = '24px';
-            messageElement.style.color = 'white';
-            messageElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            messageElement.style.padding = '20px';
-            messageElement.style.borderRadius = '10px';
-            document.body.appendChild(messageElement);
+        
+        // Example function to simulate QR code scanning
+        function scanQRCode() {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const qrData = 'HI AR'; // Simulated QR code data
+                    resolve(qrData);
+                }, 2000); // Simulating scan delay
+            });
         }
-
+        
+        // Example function to process QR code data
+        function processQRCodeData(data) {
+            alert(data); // Displaying scanned QR code data
+        }
+        
         function animate() {
             renderer.setAnimationLoop(render);
         }
-
+        
         function render() {
             renderer.render(scene, camera);
         }
-
+        
         animate();
-
+        
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        // Start QR code scanning on AR session start
-        document.addEventListener('xrsessionstart', () => {
-            setupQRScanner();
-        });
-
-        // Stop QR code scanning on AR session end
-        document.addEventListener('xrsessionend', () => {
-            clearInterval(qrScanInterval);
-            if (qrVideo && qrVideo.srcObject) {
-                qrVideo.srcObject.getTracks().forEach(track => track.stop());
-                qrVideo.srcObject = null;
-            }
-        });
-
+        
+        // Start QR code scanning after AR session starts
+        arButton.addEventListener('click', handleQRCodeScan);
     </script>
 </body>
 </html>
