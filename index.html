@@ -43,7 +43,7 @@
 
         const loader = new THREE.FontLoader();
 
-        let labelMeshes = []; // Array to store all label meshes
+        let labelMeshes = [];
 
         async function fetchDocumentsData() {
             const querySnapshot = await getDocs(collection(db, "navigations"));
@@ -85,17 +85,6 @@
             const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
-            // const cube1 = new THREE.Mesh(geometry, material);
-            // cube1.position.set(first.x, 0, first.z);
-            // scene.add(cube1);
-
-            // const cube2 = new THREE.Mesh(geometry, material);
-            // cube2.position.set(second.x, 0, second.z);
-            // scene.add(cube2);
-
-            // const cube3 = new THREE.Mesh(geometry, material);
-            // cube3.position.set(camera.position.x, 0, camera.position.z);
-            // scene.add(cube3);
             const cube1 = new THREE.Mesh(geometry, material);
             cube1.position.set(camera.position.x, 0, camera.position.z);
             scene.add(cube1);
@@ -107,6 +96,24 @@
             const cube3 = new THREE.Mesh(geometry,material);
             cube3.position.set(second.x, 0, second.z);
             scene.add(cube3);
+
+            drawCurve(cube1.position, cube2.position);
+            drawCurve(cube2.position, cube3.position);
+        }
+
+        function drawCurve(start, end) {
+            const points = [
+                new THREE.Vector3(start.x, start.y, start.z),
+                new THREE.Vector3((start.x + end.x) / 2, start.y, (start.z + end.z) / 2),
+                new THREE.Vector3(end.x, end.y, end.z)
+            ];
+
+            const curve = new THREE.CatmullRomCurve3(points);
+            const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
+            const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            const curveObject = new THREE.Line(geometry, material);
+
+            scene.add(curveObject);
         }
 
         function removeAllLabels() {
