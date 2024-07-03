@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR with QR Code</title>
+    <title>Three.js AR Scene with QR Code</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -11,64 +11,82 @@
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js"></script>
-    <script>
-        // Setup Three.js AR scene
+    <script src="https://cdn.rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <script type="module">
+        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
+        import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/geometries/TextGeometry.js';
+        import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/FontLoader.js';
+
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 0;
-        
+
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
-        
+
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
-        
-        // Function to handle QR code scanning
-        async function handleQRCodeScan() {
-            try {
-                const qrData = await scanQRCode(); // Implement scanQRCode function
-                processQRCodeData(qrData); // Implement processQRCodeData function
-            } catch (error) {
-                console.error('Error scanning QR code:', error);
+
+        let textMesh;
+        let qrScanned = false;
+
+        // QR Code Scanner
+        const scanner = new Instascan.Scanner({ video: document.createElement('video') });
+        scanner.addListener('scan', function (content) {
+            console.log('QR Code scanned:', content);
+            qrScanned = true;
+            scanner.stop();
+            createText();
+        });
+
+        Instascan.Camera.getCameras().then(function (cameras) {
+            if (cameras.length > 0) {
+                scanner.start(cameras[0]);
+            } else {
+                console.error('No cameras found.');
             }
-        }
-        
-        // Example function to simulate QR code scanning
-        function scanQRCode() {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    const qrData = 'HI AR'; // Simulated QR code data
-                    resolve(qrData);
-                }, 2000); // Simulating scan delay
+        }).catch(function (e) {
+            console.error(e);
+        });
+
+        function createText() {
+            const loader = new FontLoader();
+            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+                const geometry = new TextGeometry('HI', {
+                    font: font,
+                    size: 0.2,
+                    height: 0.05,
+                    curveSegments: 12,
+                    bevelEnabled: false
+                });
+
+                const material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+                textMesh = new THREE.Mesh(geometry, material);
+                textMesh.position.set(0, 0, -1);
+                scene.add(textMesh);
             });
         }
-        
-        // Example function to process QR code data
-        function processQRCodeData(data) {
-            alert(data); // Displaying scanned QR code data
-        }
-        
+
         function animate() {
             renderer.setAnimationLoop(render);
         }
-        
+
         function render() {
+            if (qrScanned && textMesh) {
+                textMesh.rotation.y += 0.01;
+            }
             renderer.render(scene, camera);
         }
-        
+
         animate();
-        
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-        
-        // Start QR code scanning after AR session starts
-        arButton.addEventListener('click', handleQRCodeScan);
     </script>
 </body>
 </html>
