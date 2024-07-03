@@ -85,20 +85,35 @@
             const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
+            // const cube1 = new THREE.Mesh(geometry, material);
+            // cube1.position.set(first.x, 0, first.z);
+            // scene.add(cube1);
+
+            // const cube2 = new THREE.Mesh(geometry, material);
+            // cube2.position.set(second.x, 0, second.z);
+            // scene.add(cube2);
+
+            // const cube3 = new THREE.Mesh(geometry, material);
+            // cube3.position.set(camera.position.x, 0, camera.position.z);
+            // scene.add(cube3);
             const cube1 = new THREE.Mesh(geometry, material);
-            cube1.position.set(first.x, 0, first.z);
+            cube1.position.set(camera.position.x, 0, camera.position.z);
             scene.add(cube1);
 
-            const cube2 = new THREE.Mesh(geometry, material);
-            cube2.position.set(second.x, 0, second.z);
+            const cube2 = new THREE.Mesh(geometry,material);
+            cube2.position.set(first.x, 0, first.z);
             scene.add(cube2);
+
+            const cube3 = new THREE.Mesh(geometry,material);
+            cube3.position.set(second.x, 0, second.z);
+            scene.add(cube3);
         }
 
         function removeAllLabels() {
             labelMeshes.forEach(mesh => {
                 scene.remove(mesh);
             });
-            labelMeshes = []; // Clear the array
+            labelMeshes = [];
         }
 
         fetchDocumentsData();
