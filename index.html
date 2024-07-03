@@ -73,40 +73,55 @@
                 textMesh.position.set(x, y, z);
                 textMesh.userData = { first, second };
                 textMesh.callback = function() {
-                    placeCubes(first, second);
+                    placeCubesAndPath(first, second);
                     removeAllLabels();
                 };
                 scene.add(textMesh);
-                labelMeshes.push(textMesh); // Add the mesh to our array
+                labelMeshes.push(textMesh);
             });
         }
 
-        function placeCubes(first, second) {
+        function placeCubesAndPath(first, second) {
             const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
-            // const cube1 = new THREE.Mesh(geometry, material);
-            // cube1.position.set(first.x, 0, first.z);
-            // scene.add(cube1);
-
-            // const cube2 = new THREE.Mesh(geometry, material);
-            // cube2.position.set(second.x, 0, second.z);
-            // scene.add(cube2);
-
-            // const cube3 = new THREE.Mesh(geometry, material);
-            // cube3.position.set(camera.position.x, 0, camera.position.z);
-            // scene.add(cube3);
             const cube1 = new THREE.Mesh(geometry, material);
             cube1.position.set(camera.position.x, 0, camera.position.z);
             scene.add(cube1);
 
-            const cube2 = new THREE.Mesh(geometry,material);
+            const cube2 = new THREE.Mesh(geometry, material);
             cube2.position.set(first.x, 0, first.z);
             scene.add(cube2);
 
-            const cube3 = new THREE.Mesh(geometry,material);
+            const cube3 = new THREE.Mesh(geometry, material);
             cube3.position.set(second.x, 0, second.z);
             scene.add(cube3);
+
+            // Create path using CatmullRomCurve3
+            const curve1 = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(camera.position.x, 0, camera.position.z),
+                new THREE.Vector3(first.x, 0, first.z)
+            ]);
+
+            const curve2 = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(first.x, 0, first.z),
+                new THREE.Vector3(second.x, 0, second.z)
+            ]);
+
+            const points1 = curve1.getPoints(50);
+            const points2 = curve2.getPoints(50);
+
+            const geometry1 = new THREE.BufferGeometry().setFromPoints(points1);
+            const geometry2 = new THREE.BufferGeometry().setFromPoints(points2);
+
+            const material1 = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            const material2 = new THREE.LineBasicMaterial({ color: 0x0000ff });
+
+            const curveObject1 = new THREE.Line(geometry1, material1);
+            const curveObject2 = new THREE.Line(geometry2, material2);
+
+            scene.add(curveObject1);
+            scene.add(curveObject2);
         }
 
         function removeAllLabels() {
