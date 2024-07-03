@@ -86,25 +86,25 @@
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
             const cube1 = new THREE.Mesh(geometry, material);
-            cube1.position.set(camera.position.x, 0, camera.position.z);
+            cube1.position.set(camera.position.x, -1, camera.position.z);
             scene.add(cube1);
 
             const cube2 = new THREE.Mesh(geometry, material);
-            cube2.position.set(first.x, 0, first.z);
+            cube2.position.set(first.x, -1, first.z);
             scene.add(cube2);
 
             const cube3 = new THREE.Mesh(geometry, material);
-            cube3.position.set(second.x, 0, second.z);
+            cube3.position.set(second.x, -1, second.z);
             scene.add(cube3);
 
             createTubePath([
                 new THREE.Vector3(camera.position.x, 0, camera.position.z),
-                new THREE.Vector3(first.x, 0, first.z)
+                new THREE.Vector3(first.x, -1, first.z)
             ]);
 
             createTubePath([
-                new THREE.Vector3(first.x, 0, first.z),
-                new THREE.Vector3(second.x, 0, second.z)
+                new THREE.Vector3(first.x, -1, first.z),
+                new THREE.Vector3(second.x, -1, second.z)
             ]);
         }
 
