@@ -28,18 +28,7 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        const message = new THREE.TextGeometry('HI', { 
-            font: new THREE.FontLoader().load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json'), 
-            size: 1, 
-            height: 0.1 
-        });
-
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const mesh = new THREE.Mesh(message, material);
-        mesh.position.set(0, 0, -2);
-        scene.add(mesh);
-        mesh.visible = false;
-
+        // Create a video element to capture the camera feed
         const video = document.createElement('video');
         video.setAttribute('autoplay', '');
         video.setAttribute('muted', '');
@@ -51,12 +40,24 @@
         const context = canvas.getContext('2d');
         document.body.appendChild(canvas);
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-            .then(stream => {
-                video.srcObject = stream;
-                video.play();
-                requestAnimationFrame(tick);
-            });
+        // Function to start camera feed and QR code scanning
+        function startQRScanning() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.play();
+                    requestAnimationFrame(tick);
+                });
+        }
+
+        let cube;
+        function createCube() {
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            cube = new THREE.Mesh(geometry, material);
+            cube.position.set(0, 0, -2);
+            scene.add(cube);
+        }
 
         function tick() {
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -69,7 +70,9 @@
                 });
 
                 if (code) {
-                    mesh.visible = true;
+                    if (!cube) {
+                        createCube();
+                    }
                 }
             }
             requestAnimationFrame(tick);
@@ -85,12 +88,16 @@
 
         animate();
 
+        // Start QR scanning after AR session starts
+        arButton.addEventListener('click', () => {
+            startQRScanning();
+        });
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
     </script>
 </body>
 </html>
