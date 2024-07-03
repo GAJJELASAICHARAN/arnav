@@ -82,7 +82,7 @@
         }
 
         function placeCubesAndPath(first, second) {
-            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
             const cube1 = new THREE.Mesh(geometry, material);
@@ -108,6 +108,7 @@
                 new THREE.Vector3(second.x, 0, second.z)
             ]);
         }
+
 
         function createTubePath(points) {
             const curve = new THREE.CatmullRomCurve3(points);
