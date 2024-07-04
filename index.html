@@ -46,15 +46,15 @@
             const querySnapshot = await getDocs(collection(db, "navigations"));
             const docs = querySnapshot.docs;
             const numDocs = docs.length;
-            const gridSize = 4;
+            const gridSize = Math.ceil(Math.sqrt(numDocs));
             const spacing = 1.25;
 
             docs.forEach((doc, index) => {
                 const data = doc.data();
                 const row = Math.floor(index / gridSize);
                 const col = index % gridSize;
-                const x = (col - gridSize / 2) * spacing;
-                const y = (row - gridSize / 2) * spacing;
+                const x = (row - gridSize / 2) * spacing;
+                const y = (col - gridSize / 2) * spacing;
                 const z = -2;
 
                 addLabel(doc.id, x, y, z, data.first, data.second);
