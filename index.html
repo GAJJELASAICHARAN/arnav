@@ -9,7 +9,6 @@
         canvas { display: block; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/geometries/TextGeometry.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/loaders/FontLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json"></script>
     <script type="module">
@@ -41,44 +40,50 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        const loader = new THREE.FontLoader();
-
         let labelMeshes = [];
 
         async function fetchDocumentsData() {
             const querySnapshot = await getDocs(collection(db, "navigations"));
-            let index = 0;
-            const spacing = 0.5;
+            const docs = querySnapshot.docs;
+            const numDocs = docs.length;
+            const gridSize = Math.ceil(Math.sqrt(numDocs));
+            const spacing = 1.5;
 
-            querySnapshot.forEach((doc) => {
+            docs.forEach((doc, index) => {
                 const data = doc.data();
-                const x = 0;
-                const y = index * spacing;
+                const row = Math.floor(index / gridSize);
+                const col = index % gridSize;
+                const x = (col - gridSize / 2) * spacing;
+                const y = (row - gridSize / 2) * spacing;
                 const z = -2;
 
                 addLabel(doc.id, x, y, z, data.first, data.second);
-                index++;
             });
         }
 
         function addLabel(text, x, y, z, first, second) {
-            loader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-                const textGeometry = new THREE.TextGeometry(text, {
-                    font: font,
-                    size: 0.2,
-                    height: 0.01,
-                });
-                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-                textMesh.position.set(x, y, z);
-                textMesh.userData = { first, second };
-                textMesh.callback = function() {
-                    placeCubesAndPath(first, second);
-                    removeAllLabels();
-                };
-                scene.add(textMesh);
-                labelMeshes.push(textMesh);
-            });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 128;
+            context.fillStyle = 'blue';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = '24px Arial';
+            context.fillStyle = 'white';
+            context.fillText(text, 10, 50);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const planeGeometry = new THREE.PlaneGeometry(1, 0.5);
+            const planeMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+            const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+            planeMesh.position.set(x, y, z);
+            planeMesh.userData = { first, second };
+            planeMesh.callback = function() {
+                placeCubesAndPath(first, second);
+                removeAllLabels();
+            };
+            scene.add(planeMesh);
+            labelMeshes.push(planeMesh);
         }
 
         function placeCubesAndPath(first, second) {
@@ -107,7 +112,6 @@
                 new THREE.Vector3(second.x, 0, second.z)
             ]);
         }
-
 
         function createTubePath(points) {
             const curve = new THREE.CatmullRomCurve3(points);
