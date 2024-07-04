@@ -8,17 +8,30 @@
         body { margin: 0; }
         canvas { display: block; }
     </style>
-</head>
-<body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/geometries/TextGeometry.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/jsm/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json"></script>
     <script type="module">
         import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/webxr/ARButton.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf0n84F_P4ttOD5kBadQZ3YQbC8CtuE6s",
+            authDomain: "navigation-ade65.firebaseapp.com",
+            projectId: "navigation-ade65",
+            storageBucket: "navigation-ade65.appspot.com",
+            messagingSenderId: "360761914693",
+            appId: "1:360761914693:web:43747579dacd2909c03a2c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         const scene = new THREE.Scene();
-
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 2;
+        camera.position.z = 0;
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -28,63 +41,92 @@
         const arButton = ARButton.createButton(renderer);
         document.body.appendChild(arButton);
 
-        // Create a video element to capture the camera feed
-        const video = document.createElement('video');
-        video.setAttribute('autoplay', '');
-        video.setAttribute('muted', '');
-        video.setAttribute('playsinline', '');
-        video.style.display = 'none';
-        document.body.appendChild(video);
+        const loader = new THREE.FontLoader();
 
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.style.display = 'none';
-        document.body.appendChild(canvas);
+        let labelMeshes = [];
 
-        // Function to start camera feed and QR code scanning
-        function startQRScanning() {
-            console.log("Starting QR Scanning...");
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then(stream => {
-                    video.srcObject = stream;
-                    video.play();
-                    requestAnimationFrame(tick);
-                }).catch(error => {
-                    console.error("Error accessing the camera: ", error);
-                });
+        async function fetchDocumentsData() {
+            const querySnapshot = await getDocs(collection(db, "navigations"));
+            let index = 0;
+            const spacing = 0.5;
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const x = 0;
+                const y = index * spacing;
+                const z = -2;
+
+                addLabel(doc.id, x, y, z, data.first, data.second);
+                index++;
+            });
         }
 
-        let cube;
-        function createCube() {
-            const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        function addLabel(text, x, y, z, first, second) {
+            loader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+                const textGeometry = new THREE.TextGeometry(text, {
+                    font: font,
+                    size: 0.2,
+                    height: 0.01,
+                });
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(x, y, z);
+                textMesh.userData = { first, second };
+                textMesh.callback = function() {
+                    placeCubesAndPath(first, second);
+                    removeAllLabels();
+                };
+                scene.add(textMesh);
+                labelMeshes.push(textMesh);
+            });
+        }
+
+        function placeCubesAndPath(first, second) {
+            const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            cube = new THREE.Mesh(geometry, material);
-            cube.position.set(0, 0, -2);
-            scene.add(cube);
-            console.log("Cube created and added to the scene");
+
+            const cube1 = new THREE.Mesh(geometry, material);
+            cube1.position.set(camera.position.x, 0, camera.position.z - 0.5);
+            scene.add(cube1);
+
+            const cube2 = new THREE.Mesh(geometry, material);
+            cube2.position.set(first.x, 0, first.z);
+            scene.add(cube2);
+
+            const cube3 = new THREE.Mesh(geometry, material);
+            cube3.position.set(second.x, 0, second.z);
+            scene.add(cube3);
+
+            // Create path using CatmullRomCurve3 and TubeGeometry
+            createTubePath([
+                new THREE.Vector3(camera.position.x, 0, camera.position.z),
+                new THREE.Vector3(first.x, 0, first.z)
+            ]);
+
+            createTubePath([
+                new THREE.Vector3(first.x, 0, first.z),
+                new THREE.Vector3(second.x, 0, second.z)
+            ]);
         }
 
-        function tick() {
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                    inversionAttempts: 'dontInvert',
-                });
 
-                if (code) {
-                    console.log("QR Code detected:", code.data);
-                    if (!cube) {
-                        createCube();
-                    }
-                } else {
-                    console.log("No QR code detected");
-                }
-            }
-            requestAnimationFrame(tick);
+        function createTubePath(points) {
+            const curve = new THREE.CatmullRomCurve3(points);
+            const tubeGeometry = new THREE.TubeGeometry(curve, 64, 0.02, 8, false);
+            const tubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
+
+            scene.add(tubeMesh);
         }
+
+        function removeAllLabels() {
+            labelMeshes.forEach(mesh => {
+                scene.remove(mesh);
+            });
+            labelMeshes = [];
+        }
+
+        fetchDocumentsData();
 
         function animate() {
             renderer.setAnimationLoop(render);
@@ -96,17 +138,32 @@
 
         animate();
 
-        // Start QR scanning after AR session starts
-        arButton.addEventListener('click', () => {
-            console.log("AR Session started and QR scanning initiated");
-            startQRScanning();
-        });
-
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        window.addEventListener('click', (event) => {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(scene.children);
+
+            for (let i = 0; i < intersects.length; i++) {
+                if (intersects[i].object.callback) {
+                    intersects[i].object.callback();
+                    break;
+                }
+            }
+        });
+
     </script>
+</head>
+<body>
 </body>
 </html>
