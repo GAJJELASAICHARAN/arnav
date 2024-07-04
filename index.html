@@ -43,11 +43,14 @@
 
         // Function to start camera feed and QR code scanning
         function startQRScanning() {
+            console.log("Starting QR Scanning...");
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then(stream => {
                     video.srcObject = stream;
                     video.play();
                     requestAnimationFrame(tick);
+                }).catch(error => {
+                    console.error("Error accessing the camera: ", error);
                 });
         }
 
@@ -76,6 +79,8 @@
                     if (!cube) {
                         createCube();
                     }
+                } else {
+                    console.log("No QR code detected");
                 }
             }
             requestAnimationFrame(tick);
@@ -93,8 +98,8 @@
 
         // Start QR scanning after AR session starts
         arButton.addEventListener('click', () => {
-            startQRScanning();
             console.log("AR Session started and QR scanning initiated");
+            startQRScanning();
         });
 
         window.addEventListener('resize', () => {
