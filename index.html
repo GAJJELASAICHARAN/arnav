@@ -46,7 +46,7 @@
             const querySnapshot = await getDocs(collection(db, "navigations"));
             const docs = querySnapshot.docs;
             const numDocs = docs.length;
-            const gridSize = Math.ceil(Math.sqrt(numDocs));
+            const gridSize = 4;
             const spacing = 1.25;
 
             docs.forEach((doc, index) => {
