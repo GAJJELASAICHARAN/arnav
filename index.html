@@ -51,44 +51,21 @@
     let arrowMeshes = [];
  
     function createArrow() {
-    const arrowGeometry = new THREE.BufferGeometry();
-    const vertices = new Float32Array([
-        0.4, 0, 0,  // tip of the arrow
-       -0.2, 0, 0.1,  // bottom left
-        -0.2, 0, -0.1,  // bottom right
+        const arrowGeometry = new THREE.BufferGeometry();
+        const vertices = new Float32Array([
+            0.4, 0, 0,
+            -0.2, 0, 0.1,
+            -0.2, 0, -0.1,
+        ]);
  
+        arrowGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+        arrowGeometry.computeVertexNormals();
+        const arrowMaterial = new THREE.MeshPhongMaterial({ color: 'red' });
+        const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+        arrow.rotation.z = Math.PI / 2;
  
-    //     0.4, -0.2, 0,  // tip of the arrow
-    //    -0.2, -0.2, 0.1,  // bottom left
-    //     -0.2, -0.2, -0.1,  // bottom right
- 
- 
-    //     0, 1, 0,  // tip of the arrow
-    //     0.5, 0, 0.25,  // bottom right
-    //     0.5, 0, -0.25, // bottom back right
-       
-    //     0, 1, 0,  // tip of the arrow
-    //     0.5, 0, -0.25, // bottom back right
-    //    -0.5, 0, -0.25, // bottom back left
-       
-    //     0, 1, 0,  // tip of the arrow
-    //    -0.5, 0, -0.25, // bottom back left
-    //    -0.5, 0, 0.25,  // bottom left
- 
-    //    -0.5, 0, 0.25,  // bottom left
-    //    -0.5, 0, -0.25, // bottom back left
-    //     0.5, 0, -0.25, // bottom back right
-    //     0.5, 0, 0.25,  // bottom right
-    ]);
- 
-    arrowGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    arrowGeometry.computeVertexNormals();
-    const arrowMaterial = new THREE.MeshPhongMaterial({color: 'red'});
-    const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-    arrow.rotation.z = Math.PI / 2;
- 
-    return arrow;
-}
+        return arrow;
+    }
  
     async function fetchDocumentsData() {
         const querySnapshot = await getDocs(collection(db, "navigations"));
@@ -126,7 +103,7 @@
         const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
         planeMesh.position.set(x, y, z);
         planeMesh.userData = { first, second };
-        planeMesh.callback = function() {
+        planeMesh.callback = function () {
             placeCubesAndArrowPath(first, second);
             removeAllLabels();
         };
@@ -151,13 +128,13 @@
         scene.add(cube3);
  
         createArrowPath([
-            new THREE.Vector3(camera.position.x, 0, camera.position.z),
-            new THREE.Vector3(first.x, -0.25, first.z)
+            new THREE.Vector3(camera.position.x, 0.25, camera.position.z),
+            new THREE.Vector3(first.x, 0.25, first.z)
         ]);
  
         createArrowPath([
-            new THREE.Vector3(first.x, -0.25, first.z),
-            new THREE.Vector3(second.x, -0.25, second.z)
+            new THREE.Vector3(first.x, 0.25, first.z),
+            new THREE.Vector3(second.x, 0.25, second.z)
         ]);
     }
  
@@ -168,11 +145,11 @@
             const position = new THREE.Vector3().lerpVectors(points[0], points[1], t);
             const arrow = createArrow();
             arrow.position.copy(position);
-           
+ 
             // Calculate rotation to point along the path
             const direction = new THREE.Vector3().subVectors(points[1], points[0]).normalize();
             arrow.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), direction);
-           
+ 
             scene.add(arrow);
             arrowMeshes.push(arrow);
         }
