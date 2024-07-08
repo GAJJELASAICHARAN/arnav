@@ -143,7 +143,7 @@
             const t = i / (numArrows - 1);
             const position = new THREE.Vector3().lerpVectors(points[0], points[1], t);
             const arrow = createArrow();
-            position.y += 3; // Adjust the y position to make arrows visible from above
+            position.y += -2;
             arrow.position.copy(position);
  
             const direction = new THREE.Vector3().subVectors(points[1], points[0]).normalize();
