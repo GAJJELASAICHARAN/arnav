@@ -65,6 +65,26 @@
  
         return arrow;
     }
+
+    function createArrowPath(points) {
+        const distance = points[0].distanceTo(points[1]);
+        const arrowSpacing = 0.5;
+        const numArrows = Math.ceil(distance / arrowSpacing);
+    
+        for (let i = 0; i < numArrows; i++) {
+            const t = i / (numArrows - 1);
+            const position = new THREE.Vector3().lerpVectors(points[0], points[1], t);
+            const arrow = createArrow();
+            position.y += -2;
+            arrow.position.copy(position);
+    
+            const direction = new THREE.Vector3().subVectors(points[1], points[0]).normalize();
+            arrow.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), direction);
+    
+            scene.add(arrow);
+            arrowMeshes.push(arrow);
+        }
+    }
  
     async function fetchDocumentsData() {
         const querySnapshot = await getDocs(collection(db, "navigations"));
@@ -136,28 +156,6 @@
             new THREE.Vector3(second.x, 0.25, second.z)
         ]);
     }
- 
-    function createArrowPath(points) {
-    const distance = points[0].distanceTo(points[1]);
-
-    const arrowSpacing = 0.5;
-    const numArrows = Math.floor(distance / arrowSpacing);
-
-    for (let i = 0; i < numArrows; i++) {
-        const t = i / (numArrows - 1);
-        const position = new THREE.Vector3().lerpVectors(points[0], points[1], t);
-        const arrow = createArrow();
-        position.y += -2;
-        arrow.position.copy(position);
-
-        const direction = new THREE.Vector3().subVectors(points[1], points[0]).normalize();
-        arrow.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), direction);
-
-        scene.add(arrow);
-        arrowMeshes.push(arrow);
-    }
-}
-
  
     function removeAllLabels() {
         labelMeshes.forEach(mesh => {
